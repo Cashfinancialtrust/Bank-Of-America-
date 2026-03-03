@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taylor Kinney Private Banking</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0b0f19; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .container { background: #161d2f; padding: 30px; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); width: 100%; max-width: 480px; border: 1px solid #1e293b; position: relative; }
+        
+        h2 { text-align: center; color: #38bdf8; margin: 0; letter-spacing: 1px; }
+        .tagline { text-align: center; font-size: 11px; color: #64748b; margin-bottom: 25px; text-transform: uppercase; }
+
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #334155; border-radius: 10px; background: #0b1120; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; background: #38bdf8; color: #0b1120; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; margin-top: 10px; }
+        
+        #dashboard { display: none; }
+        .card { background: #1e293b; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #334155; }
+        .balance-val { font-size: 28px; font-weight: 800; color: #22c55e; }
+
+        /* Chat System */
+        #chat-box { height: 150px; overflow-y: auto; background: #0b1120; border-radius: 10px; padding: 10px; margin-bottom: 10px; font-size: 13px; display: flex; flex-direction: column; }
+        .msg { margin-bottom: 8px; padding: 8px 12px; border-radius: 10px; max-width: 80%; }
+        .msg-manager { background: #334155; align-self: flex-start; color: #38bdf8; }
+        .msg-client { background: #1d4ed8; align-self: flex-end; color: white; }
+        .chat-controls { display: flex; gap: 5px; align-items: center; }
+        #chat-input { flex-grow: 1; margin: 0; }
+        .toggle-label { font-size: 10px; color: #94a3b8; margin-bottom: 5px; display: block; }
+
+        .history-table { width: 100%; font-size: 11px; border-collapse: collapse; }
+        .history-table td { padding: 6px 0; border-bottom: 1px solid #1e293b; }
+        .amt-pos { color: #22c55e; } .amt-neg { color: #ef4444; }
+        .transfer-success { display: none; background: #064e3b; color: #6ee7b7; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="auth-section">
+            <h2>TAYLOR KINNEY</h2>
+            <div class="tagline">Exclusive Wealth Management</div>
+            <input type="text" id="username" placeholder="Account ID (7067881318)">
+            <input type="password" id="password" placeholder="Password (Letlovelead07@)">
+            <button onclick="handleLogin()">Access Vault</button>
+        </div>
+
+        <div id="dashboard">
+            <div class="card">
+                <div style="font-size: 12px; color: #94a3b8;">Liquid Assets</div>
+                <div class="balance-val">$5,000,000.00</div>
+                <div style="font-size: 11px; margin-top: 5px; color: #818cf8;">BTC: 12.45 | ETH: 150.22 | SOL: 840.10</div>
+            </div>
+
+            <div class="card">
+                <span class="toggle-label">Currently Typing As: <strong id="role-indicator" style="color:#38bdf8">MANAGER</strong></span>
+                <div id="chat-box">
+                    <div class="msg msg-manager">Welcome to Private Support. How can I assist you today?</div>
+                </div>
+                <div class="chat-controls">
+                    <input type="text" id="chat-input" placeholder="Type message...">
+                    <button onclick="sendMessage()" style="width: 60px; margin: 0; padding: 10px;">Send</button>
+                </div>
+                <button onclick="toggleRole()" style="background: #334155; color: white; font-size: 10px; padding: 5px; margin-top: 8px;">Switch to Client Role</button>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 12px; font-weight: 600; margin-bottom: 5px;">Recent Ledger</div>
+                <table class="history-table">
+                    <tr><td>Initial Deposit</td><td class="amt-pos">+$5,000,000</td></tr>
+                    <tr><td>Wire Transfer #99</td><td class="amt-pos">+$50,000</td></tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <input type="text" id="iban-input" placeholder="IBAN / Account Number">
+                <input type="number" id="amount-input" placeholder="Transfer Amount ($)">
+                <button onclick="processTransfer()" style="background:#1d4ed8; color:white;">Submit Wire</button>
+                <div id="transfer-status" class="transfer-success">✅ Request Submitted. Funds arrive in 3 days.</div>
+            </div>
+
+            <button onclick="location.reload()" style="background:none; color:#64748b; font-size:11px; margin-top:5px; text-decoration:underline;">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        const AUTH = { user: "7067881318", pass: "Letlovelead07@" };
+        let isManager = true;
+
+        function handleLogin() {
+            if (document.getElementById('username').value === AUTH.user && document.getElementById('password').value === AUTH.pass) {
+                document.getElementById('auth-section').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+            } else { alert("Access Denied."); }
+        }
+
+        function toggleRole() {
+            isManager = !isManager;
+            const btn = event.target;
+            const indicator = document.getElementById('role-indicator');
+            indicator.innerText = isManager ? "MANAGER" : "CLIENT";
+            indicator.style.color = isManager ? "#38bdf8" : "#1d4ed8";
+            btn.innerText = isManager ? "Switch to Client Role" : "Switch to Manager Role";
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const box = document.getElementById('chat-box');
+            if (input.value.trim() === "") return;
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = isManager ? 'msg msg-manager' : 'msg msg-client';
+            msgDiv.innerText = (isManager ? "Manager: " : "You: ") + input.value;
+            
+            box.appendChild(msgDiv);
+            input.value = "";
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function processTransfer() {
+            if (document.getElementById('iban-input').value && document.getElementById('amount-input').value) {
+                document.getElementById('transfer-status').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
